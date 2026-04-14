@@ -76,6 +76,9 @@
             border: 2px solid #D4AF37; background: #2c2c34;
         }
         .coming-soon { background: rgba(212,175,55,0.2); padding: 8px; border-radius: 20px; text-align: center; font-size: 0.8rem; }
+        .gold-badge {
+            color: #D4AF37; margin-left: 6px; font-size: 0.9rem;
+        }
         .user-badge {
             display: flex; align-items: center; gap: 12px;
             background: rgba(212,175,55,0.15); padding: 6px 14px; border-radius: 40px;
@@ -143,7 +146,7 @@
     <div id="authError" class="error-msg"></div>
     <button id="authActionBtn">Login</button>
     <div class="toggle-auth" id="toggleAuthMode" style="text-align:center; cursor:pointer; color:#D4AF37;">Don't have an account? Sign up</div>
-    <div style="margin-top: 0.5rem; font-size: 0.7rem; text-align: center; color: #888;">Demo: demo@swaen.com / password</div>
+    <div style="margin-top: 0.5rem; font-size: 0.7rem; text-align: center; color: #888;">Owner: tinocrain@gmail.com (free gold badge)</div>
 </div>
 
 <!-- Account Settings Modal -->
@@ -173,8 +176,16 @@
         <input type="password" id="confirmPassword" placeholder="Confirm password">
     </div>
     <button id="saveAccountBtn">Save Changes</button>
+    
+    <!-- Verification Section -->
+    <div style="margin-top: 0.5rem; border-top: 1px solid #2c2c34; padding-top: 1rem;">
+        <h3><i class="fas fa-certificate"></i> Verification Status</h3>
+        <div id="verificationStatus"></div>
+        <div id="verifyButtonContainer"></div>
+    </div>
+    
     <button id="logoutFromAccountBtn" style="background:#2c2c34; color:#ff8080;">Logout</button>
-    <div class="coming-soon"><i class="fas fa-shield-alt"></i> Verified Account — Coming soon</div>
+    <div class="coming-soon"><i class="fas fa-shield-alt"></i> More features coming soon</div>
 </div>
 
 <!-- Users List Modal -->
@@ -235,9 +246,10 @@
 </div>
 
 <script>
-    // ---------- AUTH SYSTEM WITH EXTRA USER FIELDS ----------
+    // ---------- AUTH SYSTEM WITH VERIFICATION ----------
     const STORAGE_USERS = 'swaen_users';
     const STORAGE_SESSION = 'swaen_session';
+    const OWNER_EMAIL = 'tinocrain@gmail.com';
 
     async function hashPassword(password) {
         const encoder = new TextEncoder();
@@ -257,6 +269,45 @@
         localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
     }
 
+    // Helper to check if a user is verified (owner always true, paid users with valid until)
+    function isUserVerified(user) {
+        if (!user) return false;
+        if (user.email === OWNER_EMAIL) return true;
+        if (user.isVerified && user.verifiedUntil && new Date(user.verifiedUntil) > new Date()) return true;
+        return false;
+    }
+
+    // Update verification status in user object (for paid users)
+    async function subscribeToVerification(user) {
+        if (user.email === OWNER_EMAIL) {
+            alert("You are the owner – you already have the gold badge for free!");
+            return false;
+        }
+        // Simulate $5 payment
+        const confirmPayment = confirm("Simulate payment: $5/month for gold badge. Click OK to proceed (demo).");
+        if (!confirmPayment) return false;
+        
+        // Set verified for 30 days from now
+        const until = new Date();
+        until.setDate(until.getDate() + 30);
+        user.isVerified = true;
+        user.verifiedUntil = until.toISOString();
+        
+        // Update in storage
+        const users = getUsers();
+        const index = users.findIndex(u => u.email === user.email);
+        if (index !== -1) {
+            users[index] = user;
+            saveUsers(users);
+            // Update session user data if current user matches
+            if (getCurrentUser()?.email === user.email) {
+                localStorage.setItem(STORAGE_SESSION, user.email);
+            }
+        }
+        alert("Verification activated! You now have the gold badge for 30 days. (Demo payment accepted)");
+        return true;
+    }
+
     async function ensureDemoUser() {
         const users = getUsers();
         if (users.length === 0) {
@@ -265,7 +316,22 @@
                 email: 'demo@swaen.com', 
                 passwordHash: demoHash,
                 username: 'Demo User',
-                profilePic: 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true&name=Demo+User'
+                profilePic: 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true&name=Demo+User',
+                isVerified: false,
+                verifiedUntil: null
+            });
+            saveUsers(users);
+        }
+        // Ensure owner exists (if not, create)
+        if (!users.find(u => u.email === OWNER_EMAIL)) {
+            const ownerHash = await hashPassword('owner123'); // default password, can be changed
+            users.push({
+                email: OWNER_EMAIL,
+                passwordHash: ownerHash,
+                username: 'Owner',
+                profilePic: 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true&name=Owner',
+                isVerified: true, // owner always verified
+                verifiedUntil: null
             });
             saveUsers(users);
         }
@@ -276,7 +342,15 @@
         if (users.find(u => u.email === email)) throw new Error('Email already exists');
         const hashed = await hashPassword(password);
         const profilePic = `https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true&name=${encodeURIComponent(username)}`;
-        users.push({ email, passwordHash: hashed, username, profilePic });
+        const isOwner = (email === OWNER_EMAIL);
+        users.push({ 
+            email, 
+            passwordHash: hashed, 
+            username, 
+            profilePic,
+            isVerified: isOwner, // owner auto-verified
+            verifiedUntil: null
+        });
         saveUsers(users);
         return true;
     }
@@ -287,6 +361,12 @@
         if (!user) throw new Error('Invalid email or password');
         const hashedInput = await hashPassword(password);
         if (user.passwordHash !== hashedInput) throw new Error('Invalid email or password');
+        // Auto-set verified for owner on every login (just in case)
+        if (email === OWNER_EMAIL && !user.isVerified) {
+            user.isVerified = true;
+            user.verifiedUntil = null;
+            saveUsers(users);
+        }
         localStorage.setItem(STORAGE_SESSION, email);
         return user;
     }
@@ -313,9 +393,8 @@
         if (index !== -1) {
             users[index] = updatedUser;
             saveUsers(users);
-            // If current session email matches, update session email if changed
             const currentEmail = localStorage.getItem(STORAGE_SESSION);
-            if (currentEmail === updatedUser.email || currentEmail === updatedUser.oldEmail) {
+            if (currentEmail === updatedUser.email) {
                 localStorage.setItem(STORAGE_SESSION, updatedUser.email);
             }
         }
@@ -331,6 +410,32 @@
         document.getElementById('editPassword').value = '';
         document.getElementById('confirmPassword').value = '';
         document.getElementById('profilePicPreview').src = user.profilePic || 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true';
+        
+        // Update verification section
+        const verified = isUserVerified(user);
+        const statusDiv = document.getElementById('verificationStatus');
+        const buttonContainer = document.getElementById('verifyButtonContainer');
+        
+        if (user.email === OWNER_EMAIL) {
+            statusDiv.innerHTML = '<span style="color:#D4AF37;"><i class="fas fa-crown"></i> Owner – Gold Badge (Free Forever)</span>';
+            buttonContainer.innerHTML = '';
+        } else if (verified) {
+            const expiry = user.verifiedUntil ? new Date(user.verifiedUntil).toLocaleDateString() : 'Active';
+            statusDiv.innerHTML = `<span style="color:#D4AF37;"><i class="fas fa-check-circle"></i> Verified Gold Member – expires ${expiry}</span>`;
+            buttonContainer.innerHTML = '<button id="extendVerifyBtn" style="background:#2c2c34;">Extend for $5/month</button>';
+            setTimeout(() => {
+                const extendBtn = document.getElementById('extendVerifyBtn');
+                if (extendBtn) extendBtn.onclick = async () => { await subscribeToVerification(user); openAccountModal(); };
+            }, 100);
+        } else {
+            statusDiv.innerHTML = '<span style="color:#aaa;"><i class="fas fa-clock"></i> Not verified – get gold badge</span>';
+            buttonContainer.innerHTML = '<button id="getVerifiedBtn" style="background:#D4AF37;">Get Verified – $5/month</button>';
+            setTimeout(() => {
+                const verifyBtn = document.getElementById('getVerifiedBtn');
+                if (verifyBtn) verifyBtn.onclick = async () => { await subscribeToVerification(user); openAccountModal(); updateUIForAuthState(); };
+            }, 100);
+        }
+        
         accountModal.style.display = 'flex';
         overlay.style.display = 'block';
         document.body.style.overflow = 'hidden';
@@ -341,7 +446,6 @@
         document.body.style.overflow = '';
     }
 
-    // Save account changes
     async function saveAccountChanges() {
         const user = getCurrentUser();
         if (!user) return;
@@ -355,7 +459,6 @@
         if (!newUsername) { alert('Username cannot be empty'); return; }
         if (!newEmail) { alert('Email cannot be empty'); return; }
 
-        // Check email uniqueness if changed
         if (newEmail !== user.email) {
             const users = getUsers();
             if (users.find(u => u.email === newEmail)) {
@@ -366,25 +469,19 @@
 
         let updatedUser = { ...user, email: newEmail, username: newUsername };
 
-        // Change password if provided
         if (newPassword) {
-            if (newPassword !== confirmPwd) {
-                alert('Passwords do not match');
-                return;
-            }
-            if (newPassword.length < 4) {
-                alert('Password must be at least 4 characters');
-                return;
-            }
+            if (newPassword !== confirmPwd) { alert('Passwords do not match'); return; }
+            if (newPassword.length < 4) { alert('Password must be at least 4 characters'); return; }
             updatedUser.passwordHash = await hashPassword(newPassword);
         }
 
-        // Update profile picture if changed (handled separately)
-        // The image preview source might have been updated via upload
         updatedUser.profilePic = document.getElementById('profilePicPreview').src;
-
+        
+        // Preserve verification status
+        updatedUser.isVerified = user.isVerified;
+        updatedUser.verifiedUntil = user.verifiedUntil;
+        
         updateUserInStorage(updatedUser);
-        // Refresh UI
         updateUIForAuthState();
         closeAccountModal();
         alert('Account updated successfully!');
@@ -413,12 +510,14 @@
         if (!container) return;
         if (users.length === 0) container.innerHTML = '<p>No users registered yet.</p>';
         else {
-            container.innerHTML = users.map(user => `
+            container.innerHTML = users.map(user => {
+                const isVerified = isUserVerified(user);
+                return `
                 <div style="padding:0.75rem; border-bottom:1px solid #2c2c34; display:flex; justify-content:space-between; ${currentUserEmail === user.email ? 'background:rgba(212,175,55,0.1); border-left:3px solid #D4AF37;' : ''}">
-                    <span><i class="fas fa-envelope"></i> ${user.email} (${user.username || 'no name'})</span>
+                    <span><i class="fas fa-envelope"></i> ${user.email} (${user.username || 'no name'}) ${isVerified ? '<i class="fas fa-crown" style="color:#D4AF37;"></i>' : ''}</span>
                     ${currentUserEmail === user.email ? '<span style="color:#D4AF37;">(you)</span>' : ''}
                 </div>
-            `).join('');
+            `}).join('');
         }
         document.getElementById('usersModal').style.display = 'flex';
         overlay.style.display = 'block';
@@ -430,7 +529,7 @@
         document.body.style.overflow = '';
     }
 
-    // UI update: show/hide protected content, nav bar with profile picture
+    // UI update: show/hide protected content, nav bar with profile picture and gold badge
     function updateUIForAuthState() {
         const user = getCurrentUser();
         const navLinks = document.getElementById('navLinks');
@@ -443,16 +542,18 @@
             protectedDiv.style.display = 'block';
             loginPromptBox.style.display = 'none';
             const displayName = user.username || user.email.split('@')[0];
+            const verified = isUserVerified(user);
+            const badgeHtml = verified ? '<i class="fas fa-crown gold-badge"></i>' : '';
             navLinks.innerHTML = `
                 <div class="user-badge">
                     <img src="${user.profilePic || 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=28'}" alt="avatar">
-                    <span>${displayName}</span>
+                    <span>${displayName} ${badgeHtml}</span>
                     <button class="logout-btn" id="navbarLogoutBtn">Logout</button>
                 </div>
             `;
             document.getElementById('navbarLogoutBtn')?.addEventListener('click', () => logout());
             if (sideAccountBtn) {
-                sideAccountBtn.innerHTML = `<i class="fas fa-id-card"></i> Account: ${displayName}`;
+                sideAccountBtn.innerHTML = `<i class="fas fa-id-card"></i> Account: ${displayName} ${badgeHtml}`;
                 sideAccountBtn.onclick = (e) => { e.preventDefault(); openAccountModal(); closeSideMenu(); };
             }
             sideLogoutArea.innerHTML = '<button class="logout-btn" style="width:100%; padding:10px;" id="sideLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>';
