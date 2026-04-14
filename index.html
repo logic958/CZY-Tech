@@ -1,33 +1,716 @@
-<!-- HERO -->
-<header>
-    <h1>CEEZY x SWAEN</h1>
-    <p>We Build, Grow & Secure Your Digital Presence</p>
-    <button onclick="scrollToServices()">Explore Services</button>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CEEZY x SWAEN | Wealth & Tech Solutions</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0A0A0C;
+            font-family: 'Inter', sans-serif;
+            color: #E8E9F0;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        /* custom scroll */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #141417;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #C5A028;
+            border-radius: 8px;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #FFFFFF 0%, #C5A028 80%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+
+        .gold-text {
+            color: #D4AF37;
+        }
+
+        /* top bar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(10, 10, 12, 0.92);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(130deg, #FFFFFF 30%, #D4AF37 90%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+        .nav-links a:hover {
+            color: #D4AF37;
+        }
+        .menu-btn {
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            font-size: 1.6rem;
+            cursor: pointer;
+            color: #D4AF37;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            transition: 0.2s;
+        }
+        .menu-btn:hover {
+            background: rgba(212, 175, 55, 0.15);
+        }
+        @media (max-width: 768px) {
+            .topbar { padding: 0.8rem 1.5rem; }
+            .nav-links { display: none; }
+            .logo h1 { font-size: 1.3rem; }
+        }
+        @media (min-width: 769px) {
+            .menu-btn { display: none; }
+        }
+
+        /* SIDE MENU (drawer) */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 300px;
+            height: 100%;
+            background: #0F0F12;
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(212, 175, 55, 0.3);
+            z-index: 1100;
+            padding: 2rem 1.8rem;
+            transition: left 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 8px 0 30px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+        .side-menu.open {
+            left: 0;
+        }
+        .side-menu a {
+            color: #ECECEC;
+            text-decoration: none;
+            font-size: 1.25rem;
+            font-weight: 500;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .side-menu a i {
+            width: 28px;
+            color: #D4AF37;
+        }
+        .side-menu a:hover {
+            color: #D4AF37;
+            padding-left: 8px;
+        }
+        .close-menu {
+            align-self: flex-end;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #D4AF37;
+            margin-bottom: 1rem;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1050;
+            display: none;
+        }
+
+        /* LOGIN MODAL */
+        .login-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 420px;
+            background: #121216;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 32px;
+            padding: 2rem;
+            z-index: 1200;
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 30px 40px rgba(0,0,0,0.5);
+            backdrop-filter: blur(12px);
+        }
+        .login-box h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: #D4AF37;
+        }
+        .login-box input {
+            background: #1E1E24;
+            border: 1px solid #2C2C34;
+            padding: 14px 18px;
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+        }
+        .login-box input:focus {
+            border-color: #D4AF37;
+        }
+        .login-box button {
+            background: #D4AF37;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0A0A0C;
+        }
+        .login-box button:hover {
+            background: #b38f2c;
+            transform: scale(0.98);
+        }
+        .login-close {
+            position: absolute;
+            top: 18px;
+            right: 22px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+        }
+        .login-close:hover { color: #D4AF37; }
+
+        /* HERO SECTION (wealth style) */
+        .hero {
+            padding: 5rem 2rem 5rem 2rem;
+            text-align: center;
+            background: radial-gradient(circle at 20% 30%, rgba(212,175,55,0.08) 0%, rgba(0,0,0,0) 70%);
+        }
+        .hero h2 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+        .hero .highlight {
+            background: linear-gradient(120deg, #FFFFFF, #D4AF37);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: #BBB;
+            max-width: 650px;
+            margin: 0 auto 1.8rem;
+        }
+        .btn-gold {
+            background: #D4AF37;
+            color: #0A0A0C;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn-gold:hover {
+            background: #c2a12e;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(212,175,55,0.3);
+        }
+
+        /* Cards grid */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .card {
+            background: rgba(20, 20, 26, 0.7);
+            backdrop-filter: blur(2px);
+            border-radius: 28px;
+            padding: 1.8rem;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            transition: all 0.25s;
+        }
+        .card:hover {
+            border-color: rgba(212, 175, 55, 0.6);
+            transform: translateY(-6px);
+            background: #16161C;
+        }
+        .card i {
+            font-size: 2.5rem;
+            color: #D4AF37;
+            margin-bottom: 1rem;
+        }
+        .card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.75rem;
+        }
+        .card p {
+            color: #b0b0bc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* ANALYSIS SECTION */
+        .analysis-section {
+            background: linear-gradient(115deg, #0C0C10 0%, #111116 100%);
+            border-radius: 48px;
+            margin: 2rem 1.5rem;
+            padding: 3rem 2rem;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 20px 35px -12px black;
+        }
+        .analysis-section h2 {
+            font-size: 2.2rem;
+            font-family: 'Cormorant Garamond', serif;
+            letter-spacing: -0.2px;
+        }
+        .analysis-section .dots-quote {
+            font-size: 1.2rem;
+            margin: 1.2rem 0 1rem;
+            font-style: italic;
+            border-left: 4px solid #D4AF37;
+            padding-left: 1.5rem;
+        }
+
+        /* tech services grid (original services) */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.8rem;
+            margin-top: 2rem;
+        }
+        .tech-item {
+            background: #111115;
+            border-radius: 24px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s;
+            border: 1px solid #26262e;
+        }
+        .tech-item i {
+            font-size: 2rem;
+            color: #D4AF37;
+            margin-bottom: 0.8rem;
+        }
+        .tech-item h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        /* contact & email row */
+        .contact-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 2rem;
+            background: #0E0E12;
+            border-radius: 32px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid #22222a;
+        }
+        .contact-card {
+            flex: 1;
+            text-align: center;
+        }
+        .contact-card i {
+            font-size: 2rem;
+            color: #D4AF37;
+            margin-bottom: 1rem;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.8rem;
+            border-top: 1px solid #1E1E24;
+            margin-top: 2rem;
+            color: #6c6c7a;
+        }
+
+        @media (max-width: 680px) {
+            .hero h2 { font-size: 2.3rem; }
+            .section-title { font-size: 1.8rem; }
+            .analysis-section { padding: 2rem 1rem; }
+        }
+        button, .btn-gold { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo"><h1>CEEZY x SWAEN</h1></div>
+    <div class="nav-links">
+        <a href="#" id="whyWealthyLink">WhyWealthy</a>
+        <a href="#" id="storiesLink">Stories</a>
+        <a href="#" id="helpLink">Help</a>
+        <a href="#" id="navLoginLink">Login</a>
+    </div>
+    <div class="menu-btn" id="menuToggleBtn">☰</div>
+</div>
+
+<!-- SIDE MENU -->
+<div id="sideMenu" class="side-menu">
+    <div class="close-menu" id="closeMenuBtn">✕</div>
+    <a href="#services-section"><i class="fas fa-cogs"></i> Services</a>
+    <a href="#" id="sideAccountBtn"><i class="fas fa-user-circle"></i> Your Account</a>
+    <a href="#contact-footer"><i class="fas fa-phone-alt"></i> Contact</a>
+    <a href="#email-footer"><i class="fas fa-envelope"></i> Business Email</a>
+</div>
+<div id="overlay" class="overlay"></div>
+
+<!-- LOGIN MODAL -->
+<div id="loginBox" class="login-box">
+    <div class="login-close" id="closeLoginBtn">✕</div>
+    <h2>Access Account</h2>
+    <input type="email" id="loginEmail" placeholder="Email address">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button id="loginActionBtn">Login</button>
+    <button id="signupActionBtn">Sign Up</button>
+    <p style="font-size: 0.75rem; text-align: center; margin-top: 5px;">Demo: any email/password</p>
+</div>
+
+<!-- HERO inspired by Wealthy theme -->
+<header class="hero">
+    <h2>Explore the life <span class="highlight">you want to live.</span></h2>
+    <p><strong>Put your money to work</strong> — and let your digital presence thrive.<br>Web, Social & Tech Solutions, elevated.</p>
+    <a href="#contact-footer" class="btn-gold" id="getInTouchHero"><i class="fas fa-handshake"></i> Get in Touch</a>
 </header>
 
-<!-- SERVICES -->
-<section id="services">
-    <h2>What We Do</h2>
-
-    <div class="cards">
+<!-- FEATURE CARDS: BlackAdvantage, Financial Expertise, Advanced Technology, Right Advice -->
+<div class="container">
+    <div style="text-align: center;">
+        <span class="section-title">Elevated Advantage</span>
+        <p style="color: #aaa; margin-top: 8px;">Tailored wealth & technology fusion</p>
+    </div>
+    <div class="cards-grid">
         <div class="card">
-            <h3>Web Design</h3>
-            <p>Modern, responsive websites built for performance.</p>
+            <i class="fas fa-crown"></i>
+            <h3>BlackAdvantage</h3>
+            <p>Donec ullamcorper nulla non metus auctor fringilla. Donec sed odio dui. ullamcorper.</p>
         </div>
-
         <div class="card">
-            <h3>Cybersecurity</h3>
-            <p>Protect your digital assets and online presence.</p>
+            <i class="fas fa-chart-line"></i>
+            <h3>Financial Expertise</h3>
+            <p>Donec ullamcorper nulla non metus auctor fringilla. Donec sed odio dui. ullamcorper.</p>
         </div>
-
         <div class="card">
-            <h3>Instagram Growth</h3>
-            <p>Increase followers and engagement organically.</p>
+            <i class="fas fa-microchip"></i>
+            <h3>Advanced Technology</h3>
+            <p>Donec ullamcorper nulla non metus auctor fringilla. Donec sed odio dui. ullamcorper.</p>
         </div>
-
         <div class="card">
-            <h3>YouTube Growth</h3>
-            <p>Boost views, subscribers, and channel reach.</p>
+            <i class="fas fa-lightbulb"></i>
+            <h3>Right Advice</h3>
+            <p>Donec ullamcorper nulla non metus auctor fringilla. Donec sed odio dui. ullamcorper.</p>
         </div>
     </div>
-</section>
+</div>
+
+<!-- ANALYSIS OF YOUR WEALTH section (inspired by image) -->
+<div class="analysis-section">
+    <h2>⚡ ANALYSIS OF YOUR WEALTH</h2>
+    <div class="dots-quote">
+        <i class="fas fa-chart-simple" style="margin-right: 8px; color: #D4AF37;"></i> Helping you connect the dots.
+        <br>So you can see what life could look like into the future.
+    </div>
+    <p style="margin-top: 1rem; color: #bcbcce; line-height: 1.6;">
+        Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Maecenas sed diam eget risus varius blandit sit amet non magna. A holistic vision for your financial and digital empire.
+    </p>
+    <div style="margin-top: 1.5rem;">
+        <i class="fas fa-chart-line" style="color: #D4AF37; opacity: 0.7;"></i> <i class="fas fa-link" style="margin-left: 12px; color: #D4AF37;"></i> <i class="fas fa-chart-pie" style="margin-left: 12px; color: #D4AF37;"></i>
+    </div>
+</div>
+
+<!-- ORIGINAL SERVICES: Web Design, Cybersecurity, Instagram Growth, YouTube Growth -->
+<div class="container" id="services-section">
+    <div style="text-align: center;">
+        <span class="section-title">Core Tech Solutions</span>
+        <p style="color: #aaa;">Digital growth & security for modern elites</p>
+    </div>
+    <div class="tech-grid">
+        <div class="tech-item">
+            <i class="fas fa-code"></i>
+            <h4>Web Design</h4>
+            <p>Modern, high-performance interfaces</p>
+        </div>
+        <div class="tech-item">
+            <i class="fas fa-shield-alt"></i>
+            <h4>Cybersecurity</h4>
+            <p>Enterprise-grade protection</p>
+        </div>
+        <div class="tech-item">
+            <i class="fab fa-instagram"></i>
+            <h4>Instagram Growth</h4>
+            <p>Strategic audience expansion</p>
+        </div>
+        <div class="tech-item">
+            <i class="fab fa-youtube"></i>
+            <h4>YouTube Growth</h4>
+            <p>Engagement & visibility</p>
+        </div>
+    </div>
+</div>
+
+<!-- CONTACT & EMAIL SECTION (original + integrated) -->
+<div class="container" id="contact-footer">
+    <div class="contact-row">
+        <div class="contact-card" id="contactInfo">
+            <i class="fas fa-phone-alt"></i>
+            <h3>Contact</h3>
+            <p style="font-size: 1.2rem; font-weight: 500;">+263788915647</p>
+            <p>Mon-Fri · 9AM - 6PM</p>
+        </div>
+        <div class="contact-card" id="email-footer">
+            <i class="fas fa-paper-plane"></i>
+            <h3>Business Email</h3>
+            <p style="font-size: 1.2rem; letter-spacing: 0.5px;">ceezy@swaen.com</p>
+            <p>Secure correspondence</p>
+        </div>
+        <div class="contact-card">
+            <i class="fas fa-map-marker-alt"></i>
+            <h3>Global Access</h3>
+            <p>Digital first · Worldwide</p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>© 2025 CEEZY x SWAEN — Wealth intelligence meets tech innovation. All rights reserved.</p>
+</footer>
+
+<script>
+    // DOM elements
+    const sideMenu = document.getElementById('sideMenu');
+    const overlay = document.getElementById('overlay');
+    const menuToggle = document.getElementById('menuToggleBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const loginBox = document.getElementById('loginBox');
+    const closeLoginBtn = document.getElementById('closeLoginBtn');
+    const sideAccountBtn = document.getElementById('sideAccountBtn');
+    const navLoginLink = document.getElementById('navLoginLink');
+    const loginActionBtn = document.getElementById('loginActionBtn');
+    const signupActionBtn = document.getElementById('signupActionBtn');
+    const getInTouchHero = document.getElementById('getInTouchHero');
+    
+    // helper functions
+    function openSideMenu() {
+        sideMenu.classList.add('open');
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeSideMenu() {
+        sideMenu.classList.remove('open');
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    function openLoginModal() {
+        loginBox.style.display = 'flex';
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLoginModal() {
+        loginBox.style.display = 'none';
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    
+    // toggle menu button
+    if(menuToggle) menuToggle.addEventListener('click', openSideMenu);
+    if(closeMenuBtn) closeMenuBtn.addEventListener('click', closeSideMenu);
+    overlay.addEventListener('click', () => {
+        closeSideMenu();
+        closeLoginModal();
+    });
+    
+    // open login from side menu "Your Account"
+    if(sideAccountBtn) {
+        sideAccountBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeSideMenu();
+            openLoginModal();
+        });
+    }
+    if(navLoginLink) {
+        navLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openLoginModal();
+        });
+    }
+    if(closeLoginBtn) closeLoginBtn.addEventListener('click', closeLoginModal);
+    
+    // Login and Signup dummy functions
+    function login() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pwd = document.getElementById('loginPassword').value.trim();
+        if(email === "" || pwd === "") {
+            alert("Please enter email and password (demo mode)");
+        } else {
+            alert(`Welcome back, ${email}! (Demo access granted)`);
+            closeLoginModal();
+        }
+    }
+    function signup() {
+        const email = document.getElementById('loginEmail').value.trim();
+        if(email === "") {
+            alert("Enter email to sign up (demo)");
+        } else {
+            alert(`Sign up demo for ${email}. Thank you!`);
+            closeLoginModal();
+        }
+    }
+    if(loginActionBtn) loginActionBtn.addEventListener('click', login);
+    if(signupActionBtn) signupActionBtn.addEventListener('click', signup);
+    
+    // Get in touch scroll (smooth)
+    if(getInTouchHero) {
+        getInTouchHero.addEventListener('click', (e) => {
+            e.preventDefault();
+            const contactSection = document.getElementById('contact-footer');
+            if(contactSection) contactSection.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    
+    // side menu navigation for services / contact / email + close menu on link click
+    const sideLinks = document.querySelectorAll('.side-menu a');
+    sideLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            // if it's the "Your Account" button we already handle, but prevent double handling
+            if(link.id === 'sideAccountBtn') {
+                e.preventDefault();
+                closeSideMenu();
+                openLoginModal();
+                return;
+            }
+            const href = link.getAttribute('href');
+            if(href && href !== '#') {
+                // allow smooth scroll to elements
+                const targetElement = document.querySelector(href);
+                if(targetElement) {
+                    e.preventDefault();
+                    closeSideMenu();
+                    targetElement.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    closeSideMenu();
+                }
+            } else {
+                closeSideMenu();
+            }
+        });
+    });
+    
+    // add extra top nav features: WhyWealthy, Stories, Help - scroll to analysis/features
+    const whyLink = document.getElementById('whyWealthyLink');
+    const storiesLink = document.getElementById('storiesLink');
+    const helpLink = document.getElementById('helpLink');
+    if(whyLink) {
+        whyLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.analysis-section')?.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    if(storiesLink) {
+        storiesLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelector('.cards-grid')?.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    if(helpLink) {
+        helpLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
+        });
+    }
+    
+    // prevent login box from closing when clicking inside itself
+    loginBox.addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+    
+    // close side menu on resize if open? no needed, but keep user friendly
+    window.addEventListener('resize', () => {
+        if(window.innerWidth > 768 && sideMenu.classList.contains('open')) {
+            closeSideMenu();
+        }
+    });
+    
+    // demo email & password placeholder optional clear
+    console.log("CEEZY x SWAEN | Wealth & Tech — style matched to BlackAdvantage vision");
+</script>
+</body>
+</html>
+```
