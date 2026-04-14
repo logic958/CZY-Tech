@@ -47,31 +47,40 @@
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1050; display: none;
         }
-        .auth-modal, .users-modal {
+        .modal {
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 500px; background: #121216; border: 1px solid rgba(212, 175, 55, 0.5);
+            width: 90%; max-width: 520px; background: #121216; border: 1px solid rgba(212, 175, 55, 0.5);
             border-radius: 32px; padding: 2rem; z-index: 1200; display: none;
-            flex-direction: column; gap: 1rem; max-height: 80vh; overflow-y: auto;
+            flex-direction: column; gap: 1.2rem; max-height: 85vh; overflow-y: auto;
         }
-        .auth-modal h2, .users-modal h2 { font-size: 1.8rem; color: #D4AF37; }
-        .auth-modal input {
-            background: #1E1E24; border: 1px solid #2C2C34; padding: 14px 18px;
-            border-radius: 16px; color: white; font-size: 1rem;
+        .modal h2 { font-size: 1.8rem; color: #D4AF37; margin-bottom: 0.5rem; }
+        .modal input, .modal button {
+            background: #1E1E24; border: 1px solid #2C2C34; padding: 12px 16px;
+            border-radius: 16px; color: white; font-size: 0.95rem; width: 100%;
         }
-        .auth-modal input:focus { border-color: #D4AF37; outline: none; }
-        .auth-modal button, .users-modal button {
-            background: #D4AF37; border: none; padding: 12px; border-radius: 40px;
-            font-weight: bold; cursor: pointer; color: #0A0A0C;
+        .modal button {
+            background: #D4AF37; color: #0A0A0C; font-weight: bold; cursor: pointer;
+            border: none; transition: 0.2s;
         }
-        .auth-close, .users-close {
+        .modal button:hover { background: #b38f2c; }
+        .modal-close {
             position: absolute; top: 18px; right: 22px; font-size: 1.5rem; cursor: pointer; color: #aaa;
         }
-        .toggle-auth { text-align: center; margin-top: 0.5rem; font-size: 0.85rem; cursor: pointer; color: #D4AF37; }
-        .error-msg { color: #ff8080; font-size: 0.8rem; }
+        .error-msg { color: #ff8080; font-size: 0.8rem; margin-top: -0.5rem; }
+        .success-msg { color: #8bc34a; font-size: 0.8rem; }
+        .profile-pic {
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;
+        }
+        .profile-pic img {
+            width: 70px; height: 70px; border-radius: 50%; object-fit: cover;
+            border: 2px solid #D4AF37; background: #2c2c34;
+        }
+        .coming-soon { background: rgba(212,175,55,0.2); padding: 8px; border-radius: 20px; text-align: center; font-size: 0.8rem; }
         .user-badge {
             display: flex; align-items: center; gap: 12px;
             background: rgba(212,175,55,0.15); padding: 6px 14px; border-radius: 40px;
         }
+        .user-badge img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
         .logout-btn {
             background: none; border: 1px solid #D4AF37; color: #D4AF37;
             padding: 4px 12px; border-radius: 30px; cursor: pointer;
@@ -103,9 +112,8 @@
         .contact-row { display: flex; flex-wrap: wrap; gap: 2rem; background: #0E0E12; border-radius: 32px; padding: 2rem; margin-top: 2rem; }
         .contact-card { flex: 1; text-align: center; }
         footer { text-align: center; padding: 2rem; border-top: 1px solid #1E1E24; color: #6c6c7a; }
-        .user-list-item { padding: 0.75rem; border-bottom: 1px solid #2c2c34; display: flex; justify-content: space-between; }
-        .current-user-highlight { background: rgba(212,175,55,0.2); border-left: 3px solid #D4AF37; }
         @media (max-width: 680px) { .hero h2 { font-size: 2.3rem; } }
+        hr { border-color: #2c2c34; margin: 0.5rem 0; }
     </style>
 </head>
 <body>
@@ -126,23 +134,54 @@
 </div>
 <div id="overlay" class="overlay"></div>
 
-<!-- Auth Modal -->
-<div id="authModal" class="auth-modal">
-    <div class="auth-close" id="closeAuthBtn">✕</div>
+<!-- Auth Modal (Login / Sign Up) -->
+<div id="authModal" class="modal">
+    <div class="modal-close" id="closeAuthBtn">✕</div>
     <h2 id="authTitle">Login</h2>
     <input type="email" id="authEmail" placeholder="Email address">
     <input type="password" id="authPassword" placeholder="Password">
     <div id="authError" class="error-msg"></div>
     <button id="authActionBtn">Login</button>
-    <div class="toggle-auth" id="toggleAuthMode">Don't have an account? Sign up</div>
+    <div class="toggle-auth" id="toggleAuthMode" style="text-align:center; cursor:pointer; color:#D4AF37;">Don't have an account? Sign up</div>
     <div style="margin-top: 0.5rem; font-size: 0.7rem; text-align: center; color: #888;">Demo: demo@swaen.com / password</div>
 </div>
 
+<!-- Account Settings Modal -->
+<div id="accountModal" class="modal">
+    <div class="modal-close" id="closeAccountBtn">✕</div>
+    <h2><i class="fas fa-id-card"></i> Account Settings</h2>
+    <div class="profile-pic">
+        <img id="profilePicPreview" src="https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true" alt="Profile">
+        <input type="file" id="profilePicUpload" accept="image/*" style="display:none;">
+        <button id="uploadPicBtn">Change Picture</button>
+    </div>
+    <div>
+        <label>Username</label>
+        <input type="text" id="editUsername" placeholder="Username">
+    </div>
+    <div>
+        <label>Email Address</label>
+        <input type="email" id="editEmail" placeholder="Email">
+        <div id="emailError" class="error-msg"></div>
+    </div>
+    <div>
+        <label>New Password (leave blank to keep)</label>
+        <input type="password" id="editPassword" placeholder="New password">
+    </div>
+    <div>
+        <label>Confirm New Password</label>
+        <input type="password" id="confirmPassword" placeholder="Confirm password">
+    </div>
+    <button id="saveAccountBtn">Save Changes</button>
+    <button id="logoutFromAccountBtn" style="background:#2c2c34; color:#ff8080;">Logout</button>
+    <div class="coming-soon"><i class="fas fa-shield-alt"></i> Verified Account — Coming soon</div>
+</div>
+
 <!-- Users List Modal -->
-<div id="usersModal" class="users-modal">
-    <div class="users-close" id="closeUsersBtn">✕</div>
+<div id="usersModal" class="modal">
+    <div class="modal-close" id="closeUsersBtn">✕</div>
     <h2><i class="fas fa-users"></i> Registered Users</h2>
-    <div id="usersListContainer" style="margin-top: 1rem; max-height: 400px; overflow-y: auto;"></div>
+    <div id="usersListContainer" style="margin-top: 1rem; max-height: 300px; overflow-y: auto;"></div>
     <button id="refreshUsersBtn">Refresh</button>
 </div>
 
@@ -196,7 +235,7 @@
 </div>
 
 <script>
-    // ---------- AUTH SYSTEM ----------
+    // ---------- AUTH SYSTEM WITH EXTRA USER FIELDS ----------
     const STORAGE_USERS = 'swaen_users';
     const STORAGE_SESSION = 'swaen_session';
 
@@ -222,16 +261,22 @@
         const users = getUsers();
         if (users.length === 0) {
             const demoHash = await hashPassword('password');
-            users.push({ email: 'demo@swaen.com', passwordHash: demoHash });
+            users.push({ 
+                email: 'demo@swaen.com', 
+                passwordHash: demoHash,
+                username: 'Demo User',
+                profilePic: 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true&name=Demo+User'
+            });
             saveUsers(users);
         }
     }
 
-    async function register(email, password) {
+    async function register(email, password, username = email.split('@')[0]) {
         const users = getUsers();
         if (users.find(u => u.email === email)) throw new Error('Email already exists');
         const hashed = await hashPassword(password);
-        users.push({ email, passwordHash: hashed });
+        const profilePic = `https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true&name=${encodeURIComponent(username)}`;
+        users.push({ email, passwordHash: hashed, username, profilePic });
         saveUsers(users);
         return true;
     }
@@ -252,6 +297,7 @@
         closeSideMenu();
         closeAuthModal();
         closeUsersModal();
+        closeAccountModal();
     }
 
     function getCurrentUser() {
@@ -261,19 +307,115 @@
         return users.find(u => u.email === email) || null;
     }
 
-    // Display all registered users (for logged-in users)
+    function updateUserInStorage(updatedUser) {
+        const users = getUsers();
+        const index = users.findIndex(u => u.email === updatedUser.email);
+        if (index !== -1) {
+            users[index] = updatedUser;
+            saveUsers(users);
+            // If current session email matches, update session email if changed
+            const currentEmail = localStorage.getItem(STORAGE_SESSION);
+            if (currentEmail === updatedUser.email || currentEmail === updatedUser.oldEmail) {
+                localStorage.setItem(STORAGE_SESSION, updatedUser.email);
+            }
+        }
+    }
+
+    // Account modal logic
+    const accountModal = document.getElementById('accountModal');
+    function openAccountModal() {
+        const user = getCurrentUser();
+        if (!user) return;
+        document.getElementById('editUsername').value = user.username || user.email.split('@')[0];
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        document.getElementById('profilePicPreview').src = user.profilePic || 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=70&bold=true';
+        accountModal.style.display = 'flex';
+        overlay.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeAccountModal() {
+        accountModal.style.display = 'none';
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Save account changes
+    async function saveAccountChanges() {
+        const user = getCurrentUser();
+        if (!user) return;
+        const newUsername = document.getElementById('editUsername').value.trim();
+        const newEmail = document.getElementById('editEmail').value.trim();
+        const newPassword = document.getElementById('editPassword').value;
+        const confirmPwd = document.getElementById('confirmPassword').value;
+        const emailErrorDiv = document.getElementById('emailError');
+        emailErrorDiv.innerText = '';
+
+        if (!newUsername) { alert('Username cannot be empty'); return; }
+        if (!newEmail) { alert('Email cannot be empty'); return; }
+
+        // Check email uniqueness if changed
+        if (newEmail !== user.email) {
+            const users = getUsers();
+            if (users.find(u => u.email === newEmail)) {
+                emailErrorDiv.innerText = 'Email already taken by another user';
+                return;
+            }
+        }
+
+        let updatedUser = { ...user, email: newEmail, username: newUsername };
+
+        // Change password if provided
+        if (newPassword) {
+            if (newPassword !== confirmPwd) {
+                alert('Passwords do not match');
+                return;
+            }
+            if (newPassword.length < 4) {
+                alert('Password must be at least 4 characters');
+                return;
+            }
+            updatedUser.passwordHash = await hashPassword(newPassword);
+        }
+
+        // Update profile picture if changed (handled separately)
+        // The image preview source might have been updated via upload
+        updatedUser.profilePic = document.getElementById('profilePicPreview').src;
+
+        updateUserInStorage(updatedUser);
+        // Refresh UI
+        updateUIForAuthState();
+        closeAccountModal();
+        alert('Account updated successfully!');
+    }
+
+    // Profile picture upload
+    document.getElementById('uploadPicBtn').addEventListener('click', () => {
+        document.getElementById('profilePicUpload').click();
+    });
+    document.getElementById('profilePicUpload').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                document.getElementById('profilePicPreview').src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Users modal (view all users)
     function showUsersModal() {
         const users = getUsers();
         const currentUserEmail = getCurrentUser()?.email;
         const container = document.getElementById('usersListContainer');
         if (!container) return;
-        
-        if (users.length === 0) {
-            container.innerHTML = '<p>No users registered yet.</p>';
-        } else {
+        if (users.length === 0) container.innerHTML = '<p>No users registered yet.</p>';
+        else {
             container.innerHTML = users.map(user => `
-                <div class="user-list-item ${currentUserEmail === user.email ? 'current-user-highlight' : ''}">
-                    <span><i class="fas fa-envelope"></i> ${user.email}</span>
+                <div style="padding:0.75rem; border-bottom:1px solid #2c2c34; display:flex; justify-content:space-between; ${currentUserEmail === user.email ? 'background:rgba(212,175,55,0.1); border-left:3px solid #D4AF37;' : ''}">
+                    <span><i class="fas fa-envelope"></i> ${user.email} (${user.username || 'no name'})</span>
                     ${currentUserEmail === user.email ? '<span style="color:#D4AF37;">(you)</span>' : ''}
                 </div>
             `).join('');
@@ -282,14 +424,13 @@
         overlay.style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
-
     function closeUsersModal() {
         document.getElementById('usersModal').style.display = 'none';
         overlay.style.display = 'none';
         document.body.style.overflow = '';
     }
 
-    // UI update: show/hide protected content, nav, side menu
+    // UI update: show/hide protected content, nav bar with profile picture
     function updateUIForAuthState() {
         const user = getCurrentUser();
         const navLinks = document.getElementById('navLinks');
@@ -301,16 +442,18 @@
         if (user) {
             protectedDiv.style.display = 'block';
             loginPromptBox.style.display = 'none';
+            const displayName = user.username || user.email.split('@')[0];
             navLinks.innerHTML = `
                 <div class="user-badge">
-                    <span><i class="fas fa-user-check"></i> ${user.email}</span>
+                    <img src="${user.profilePic || 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=28'}" alt="avatar">
+                    <span>${displayName}</span>
                     <button class="logout-btn" id="navbarLogoutBtn">Logout</button>
                 </div>
             `;
             document.getElementById('navbarLogoutBtn')?.addEventListener('click', () => logout());
             if (sideAccountBtn) {
-                sideAccountBtn.innerHTML = '<i class="fas fa-id-card"></i> Account: ' + user.email.split('@')[0];
-                sideAccountBtn.onclick = (e) => { e.preventDefault(); alert(`Logged in as ${user.email}`); closeSideMenu(); };
+                sideAccountBtn.innerHTML = `<i class="fas fa-id-card"></i> Account: ${displayName}`;
+                sideAccountBtn.onclick = (e) => { e.preventDefault(); openAccountModal(); closeSideMenu(); };
             }
             sideLogoutArea.innerHTML = '<button class="logout-btn" style="width:100%; padding:10px;" id="sideLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>';
             document.getElementById('sideLogoutBtn')?.addEventListener('click', () => logout());
@@ -355,20 +498,15 @@
         overlay.style.display = 'block';
         document.body.style.overflow = 'hidden';
     }
-
     function closeAuthModal() {
         authModal.style.display = 'none';
         overlay.style.display = 'none';
         document.body.style.overflow = '';
     }
-
     async function handleAuthAction() {
         const email = authEmail.value.trim();
         const password = authPassword.value;
-        if (!email || !password) {
-            authError.innerText = 'Email and password required';
-            return;
-        }
+        if (!email || !password) { authError.innerText = 'Email and password required'; return; }
         try {
             if (currentAuthMode === 'login') {
                 await login(email, password);
@@ -380,12 +518,8 @@
                 closeAuthModal();
                 updateUIForAuthState();
             }
-        } catch (err) {
-            authError.innerText = err.message;
-        }
+        } catch (err) { authError.innerText = err.message; }
     }
-
-    // Event listeners
     authActionBtn.addEventListener('click', handleAuthAction);
     toggleAuthMode.addEventListener('click', () => {
         if (currentAuthMode === 'login') openAuthModal('signup');
@@ -393,7 +527,12 @@
     });
     document.getElementById('closeAuthBtn').addEventListener('click', closeAuthModal);
     document.getElementById('openLoginFromHero').addEventListener('click', () => openAuthModal('login'));
-    
+
+    // Account modal buttons
+    document.getElementById('closeAccountBtn').addEventListener('click', closeAccountModal);
+    document.getElementById('saveAccountBtn').addEventListener('click', saveAccountChanges);
+    document.getElementById('logoutFromAccountBtn').addEventListener('click', () => { logout(); closeAccountModal(); });
+
     // Users modal
     document.getElementById('sideUsersLink').addEventListener('click', () => {
         if (getCurrentUser()) showUsersModal();
@@ -401,10 +540,8 @@
         closeSideMenu();
     });
     document.getElementById('closeUsersBtn').addEventListener('click', closeUsersModal);
-    document.getElementById('refreshUsersBtn').addEventListener('click', () => {
-        if (getCurrentUser()) showUsersModal(); // refresh list
-    });
-    
+    document.getElementById('refreshUsersBtn').addEventListener('click', () => { if(getCurrentUser()) showUsersModal(); });
+
     // Menu toggles
     const sideMenu = document.getElementById('sideMenu');
     const overlayDiv = document.getElementById('overlay');
@@ -412,9 +549,8 @@
     function closeSideMenu() { sideMenu.classList.remove('open'); overlayDiv.style.display = 'none'; document.body.style.overflow = ''; }
     document.getElementById('menuToggleBtn').addEventListener('click', openSideMenu);
     document.getElementById('closeMenuBtn').addEventListener('click', closeSideMenu);
-    overlayDiv.addEventListener('click', () => { closeSideMenu(); closeAuthModal(); closeUsersModal(); });
+    overlayDiv.addEventListener('click', () => { closeSideMenu(); closeAuthModal(); closeUsersModal(); closeAccountModal(); });
     
-    // Side menu links scroll
     document.getElementById('sideServicesLink')?.addEventListener('click', () => {
         if (getCurrentUser()) document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
         else openAuthModal('login');
@@ -426,11 +562,9 @@
         closeSideMenu();
     });
     
-    // Initialize
-    ensureDemoUser().then(() => {
-        updateUIForAuthState();
-    });
+    ensureDemoUser().then(() => updateUIForAuthState());
     authModal.addEventListener('click', (e) => e.stopPropagation());
+    accountModal.addEventListener('click', (e) => e.stopPropagation());
     document.getElementById('usersModal').addEventListener('click', (e) => e.stopPropagation());
 </script>
 </body>
