@@ -67,17 +67,28 @@
             position: absolute; top: 18px; right: 22px; font-size: 1.5rem; cursor: pointer; color: #aaa;
         }
         .error-msg { color: #ff8080; font-size: 0.8rem; margin-top: -0.5rem; }
+        /* Golden verified tick */
         .gold-tick {
             color: #D4AF37;
             margin-left: 6px;
-            font-weight: bold;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .gold-tick i {
             font-size: 1rem;
         }
         .user-badge {
             display: flex; align-items: center; gap: 12px;
             background: rgba(212,175,55,0.15); padding: 6px 14px; border-radius: 40px;
         }
-        .user-badge img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .user-badge img { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            object-fit: cover;
+        }
         .logout-btn {
             background: none; border: 1px solid #D4AF37; color: #D4AF37;
             padding: 4px 12px; border-radius: 30px; cursor: pointer;
@@ -111,6 +122,19 @@
         footer { text-align: center; padding: 2rem; border-top: 1px solid #1E1E24; color: #6c6c7a; }
         @media (max-width: 680px) { .hero h2 { font-size: 2.3rem; } }
         hr { border-color: #2c2c34; margin: 0.5rem 0; }
+        .profile-pic {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .profile-pic img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #D4AF37;
+        }
         .payment-row { display: flex; gap: 1rem; }
         .payment-row input { width: 100%; }
     </style>
@@ -288,7 +312,6 @@
         return false;
     }
 
-    // Open payment modal for non-owner verification
     let pendingVerificationUser = null;
     function openPaymentModal(user) {
         pendingVerificationUser = user;
@@ -316,12 +339,10 @@
             document.getElementById('paymentError').innerText = 'Please fill all payment fields';
             return;
         }
-        // Basic demo validation
         if (cardNum.length < 13 || expiry.length < 4 || cvv.length < 3) {
             document.getElementById('paymentError').innerText = 'Invalid card details (demo)';
             return;
         }
-        // Simulate payment success
         const user = pendingVerificationUser;
         if (!user) return;
         const until = new Date();
@@ -341,9 +362,8 @@
         alert("Verification activated! You now have the gold badge for 30 days. (Demo payment accepted)");
         closePaymentModal();
         updateUIForAuthState();
-        // Refresh account modal if open
         if (accountModal.style.display === 'flex') {
-            openAccountModal(); // refresh
+            openAccountModal();
         }
     }
 
@@ -453,8 +473,8 @@
         if (!user) return;
         const username = user.username || user.email.split('@')[0];
         const verified = isUserVerified(user);
-        const tickHtml = verified ? '<span class="gold-tick">✓</span>' : '';
-        document.getElementById('usernameDisplay').innerHTML = `<strong>${username}</strong> ${tickHtml}`;
+        const tickHtml = verified ? '<span class="gold-tick"><i class="fas fa-check-circle"></i></span>' : '';
+        document.getElementById('usernameDisplay').innerHTML = `<strong>${escapeHtml(username)}</strong> ${tickHtml}`;
         document.getElementById('editUsername').value = username;
         document.getElementById('editEmail').value = user.email;
         document.getElementById('editPassword').value = '';
@@ -533,6 +553,15 @@
         alert('Account updated successfully!');
     }
 
+    function escapeHtml(str) {
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
     // Profile picture upload
     document.getElementById('uploadPicBtn').addEventListener('click', () => {
         document.getElementById('profilePicUpload').click();
@@ -560,7 +589,7 @@
                 const verified = isUserVerified(user);
                 return `
                 <div style="padding:0.75rem; border-bottom:1px solid #2c2c34; display:flex; justify-content:space-between; ${currentUserEmail === user.email ? 'background:rgba(212,175,55,0.1); border-left:3px solid #D4AF37;' : ''}">
-                    <span><i class="fas fa-envelope"></i> ${user.email} (${user.username || 'no name'}) ${verified ? '<span style="color:#D4AF37;">✓</span>' : ''}</span>
+                    <span><i class="fas fa-envelope"></i> ${escapeHtml(user.email)} (${escapeHtml(user.username || 'no name')}) ${verified ? '<i class="fas fa-check-circle" style="color:#D4AF37;"></i>' : ''}</span>
                     ${currentUserEmail === user.email ? '<span style="color:#D4AF37;">(you)</span>' : ''}
                 </div>
             `}).join('');
@@ -575,7 +604,7 @@
         document.body.style.overflow = '';
     }
 
-    // UI update: show/hide protected content, nav bar with gold tick
+    // UI update
     function updateUIForAuthState() {
         const user = getCurrentUser();
         const navLinks = document.getElementById('navLinks');
@@ -589,17 +618,17 @@
             loginPromptBox.style.display = 'none';
             const displayName = user.username || user.email.split('@')[0];
             const verified = isUserVerified(user);
-            const tickHtml = verified ? '<span class="gold-tick">✓</span>' : '';
+            const tickHtml = verified ? '<span class="gold-tick"><i class="fas fa-check-circle"></i></span>' : '';
             navLinks.innerHTML = `
                 <div class="user-badge">
                     <img src="${user.profilePic || 'https://ui-avatars.com/api/?background=D4AF37&color=fff&size=28'}" alt="avatar">
-                    <span><strong>${displayName}</strong> ${tickHtml}</span>
+                    <span><strong>${escapeHtml(displayName)}</strong> ${tickHtml}</span>
                     <button class="logout-btn" id="navbarLogoutBtn">Logout</button>
                 </div>
             `;
             document.getElementById('navbarLogoutBtn')?.addEventListener('click', () => logout());
             if (sideAccountBtn) {
-                sideAccountBtn.innerHTML = `<i class="fas fa-id-card"></i> Account: <strong>${displayName}</strong> ${tickHtml}`;
+                sideAccountBtn.innerHTML = `<i class="fas fa-id-card"></i> Account: <strong>${escapeHtml(displayName)}</strong> ${tickHtml}`;
                 sideAccountBtn.onclick = (e) => { e.preventDefault(); openAccountModal(); closeSideMenu(); };
             }
             sideLogoutArea.innerHTML = '<button class="logout-btn" style="width:100%; padding:10px;" id="sideLogoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>';
